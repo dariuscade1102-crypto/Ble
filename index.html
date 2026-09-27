@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFC Audio Auto-Player</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0d1117;
+      color: #f0f6fc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      padding: 32px 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    .icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+      animation: pulse 1.5s infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.1); opacity: 1; }
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    p {
+      color: #8b949e;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .primary-btn {
+      background-color: #238636;
+      color: #ffffff;
+      border: none;
+      width: 100%;
+      padding: 18px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    .primary-btn:active {
+      transform: scale(0.98);
+      background-color: #2ea043;
+    }
+    .status {
+      margin-top: 15px;
+      font-size: 0.85rem;
+      color: #58a6ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon" id="statusIcon">🔊</div>
+    <h1 id="title">NFC Sound Station</h1>
+    <p id="subtitle">Streaming audio automatically...</p>
+
+    <!-- Autoplay and Playsinline enabled -->
+    <audio id="player" src="sound.mp3" preload="auto" autoplay playsinline></audio>
+
+    <!-- Fallback button if mobile OS blocks silent autoplay -->
+    <button class="primary-btn" id="playBtn" onclick="forcePlay()">
+      ▶ Tap to Listen
+    </button>
+
+    <div class="status" id="statusMsg">Attempting auto-play...</div>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const playBtn = document.getElementById('playBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const subtitle = document.getElementById('subtitle');
+
+    function forcePlay() {
+      player.play().then(() => {
+        playBtn.innerText = "🔊 Playing Audio";
+        playBtn.style.backgroundColor = "#1f6feb";
+        statusMsg.innerText = "Playback active";
+        subtitle.innerText = "Audio streaming directly from web";
+      }).catch(() => {
+        statusMsg.innerText = "Tap button above to play";
+      });
+    }
+
+    // Immediate Autoplay Logic
+    const triggerAutoplay = () => {
+      const playPromise = player.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          playBtn.innerText = "🔊 Playing Audio";
+          playBtn.style.backgroundColor = "#1f6feb";
+          statusMsg.innerText = "Auto-play started!";
+        }).catch(() => {
+          // Triggered if Mobile Safari / Chrome restricts unmuted autoplay
+          statusMsg.innerText = "Tap anywhere on screen to play";
+        });
+      }
+    };
+
+    // Multiple event hooks for max NFC tap compatibility
+    window.addEventListener('DOMContentLoaded', triggerAutoplay);
+    window.addEventListener('load', triggerAutoplay);
+
+    // Global touch fallback: any touch on the phone screen unlocks playback
+    document.addEventListener('touchstart', forcePlay, { once: true });
+    document.addEventListener('click', forcePlay, { once: true });
+  </script>
+
+</body>
+</html>
